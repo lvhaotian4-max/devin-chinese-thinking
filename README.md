@@ -1,5 +1,7 @@
 <div align="center">
 
+![banner](assets/banner.jpg)
+
 # 🧠 Devin 思考链汉化指南
 
 **让 Devin / SWE-2 / SWE-2 Flash 的内部推理（thinking / reasoning）全程使用简体中文输出**
@@ -8,7 +10,7 @@
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)]()
 [![Devin](https://img.shields.io/badge/Devin-CLI%20%2F%20Desktop-0b5fff)](https://devin.ai)
 
-[快速开始](#-快速开始) · [原理解析](docs/mechanism.md) · [模板下载](#-可直接复制的模板) · [常见问题](#-常见问题-faq)
+[快速开始](#-快速开始) · [原理解析](docs/mechanism.md) · [模板下载](#-可直接复制的模板) · [常见问题](#-常见问题-faq) · [English](README.en.md)
 
 </div>
 
@@ -19,6 +21,8 @@
 配置完成后，Devin 在执行任务时的**内部思考过程**（thinking chain / reasoning trace）将以简体中文呈现，而不是默认的英文。无论是计划模式、子代理（subagent）、还是工具调用前的推理，全部遵循同一语言规则。
 
 > 💡 思考链是模型的"内心独白"，把它变成中文后，审查 AI 的推理逻辑、调试 Agent 行为都会方便得多。
+
+![效果预览](assets/screenshot.jpg)
 
 ## 🎯 适用范围
 
@@ -119,6 +123,16 @@ A：可以。把"简体中文"替换成目标语言（如 English、日本語）
 ## 🙏 致谢
 
 本方案源自实际使用中验证可行的配置实践，感谢 Devin / Windsurf 规则体系对用户自定义指令的支持。
+
+## ☕ 打赏支持
+
+如果这个项目对你有帮助，欢迎请我喝杯咖啡 ☕
+
+| 微信支付 | 支付宝 |
+|---|---|
+| ![微信收款码](assets/wechat-qr.jpg) | ![支付宝收款码](assets/alipay-qr.jpg) |
+
+> 打赏完全自愿，Star ⭐ 就是最大的支持！
 
 ## 📄 License
 
