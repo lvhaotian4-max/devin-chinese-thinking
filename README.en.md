@@ -4,7 +4,7 @@
 
 # 🧠 Devin Thinking Chain Localization Guide
 
-**Make Devin / SWE-2 / SWE-2 Flash internal reasoning (thinking / reasoning) output entirely in Simplified Chinese**
+**Make Devin / SWE-2 / SWE-2 Flash visible thinking notes (Thoughts / reasoning trace) output primarily in Simplified Chinese**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)]()
@@ -18,58 +18,74 @@
 
 ## ✨ Preview
 
-Once configured, Devin's **internal thinking process** (thinking chain / reasoning trace) will be presented in Simplified Chinese instead of the default English — across plan mode, subagents, and pre-tool-call reasoning alike.
+Once configured, the **thinking notes, plans, pre-tool-call explanations, and summaries shown to you** will be primarily in Simplified Chinese instead of the default English.
 
-> 💡 The thinking chain is the model's "inner monologue". Switching it to Chinese makes it much easier to review the AI's reasoning logic and debug agent behavior.
+> 💡 Thinking notes are the visible part of the model's "inner monologue". Switching them to Chinese makes it much easier to review the AI's reasoning and debug agent behavior.
+> Note: rules raise the *tendency* toward Chinese, not a hard guarantee — model versions, long contexts, and mode switches can still cause drift. Invisible internal reasoning is outside the rules' control. See [Compatibility](docs/compatibility.md).
 
 ![Preview](assets/screenshot.jpg)
 
 ## 🎯 Compatibility
 
-| Product / Model | Status |
-|---|---|
-| Devin Desktop (IDE built-in Agent) | ✅ Verified |
-| Devin CLI | ✅ Verified |
-| SWE-2 Flash | ✅ Verified |
-| Other Agents based on the Windsurf rules system | ✅ Should work |
+| Product / Model | Status | Notes |
+|---|---|---|
+| Devin Desktop (IDE built-in Agent) | ✅ Author-tested | See `assets/screenshot.jpg`; single-session evidence |
+| Devin CLI | ⚠️ Mechanism confirmed | Official docs confirm rule loading; language effect pending retest |
+| SWE-2 Flash | ✅ Author-tested | Same as above |
+| `.devin/rules` v2 template | ⚠️ Pending manual test | Docs confirm `always_on` support; see [test matrix](docs/manual-test-matrix.md) |
+| Other Windsurf-rules-based Agents | ⚠️ Theoretically compatible | Not tested |
 
 ## 🚀 Quick Start
 
-The whole setup takes **about 2 minutes**, in three steps:
+The whole setup takes **about 2 minutes**. Windows users can use the one-click script; manual setup also works.
 
-### Step 1: Find your rules file
+### Option A: One-click script (Windows, recommended)
 
-Devin loads two kinds of **always-on** rule files:
-
-| File path | Scope | Description |
-|---|---|---|
-| `~/.codeium/windsurf/memories/global_rules.md` | Global | Windsurf memory rules, applies to all sessions |
-| `~/AppData/Roaming/devin/AGENTS.md` (Windows)<br>`~/.config/devin/AGENTS.md` (macOS/Linux) | Global | Devin global agent rules |
-
-> Windows example: `C:\Users\<your-username>\AppData\Roaming\devin\AGENTS.md`
-
-If the file doesn't exist, **create it**; if it exists, **append** the content below — do not overwrite existing rules.
-
-### Step 2: Add the language rule
-
-Add the following to any one of the files above (or both for extra safety):
-
-```markdown
-## Language
-
-- Always reply to the user in Simplified Chinese, including all explanations,
-  summaries, questions, and code comment descriptions.
-- All internal reasoning/thinking must be entirely in Simplified Chinese;
-  do not produce English thinking chains. This applies to Devin, SWE-2,
-  subagents, plan mode, and pre-tool-call reasoning; if the model defaults
-  to English thinking, it must switch to Simplified Chinese immediately.
-- Keep code itself, commands, file paths, API names, and other technical
-  identifiers in their original form (English); do not translate them.
-- Commit messages and PR descriptions should also be in Chinese unless the
-  project has other conventions.
+```powershell
+git clone https://github.com/lvhaotian4-max/devin-chinese-thinking
+cd devin-chinese-thinking
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Targets all
 ```
 
-Full template: [`templates/language-rules.md`](templates/language-rules.md).
+- Detects both new paths (`~/.devin/rules/`, `%APPDATA%\devin\AGENTS.md`)
+  and legacy paths (`.codeium/windsurf/memories/global_rules.md`);
+- Backs up existing files to `.bak-<timestamp>` before modifying;
+  idempotent on re-run; never overwrites unmanaged files.
+
+Verify and maintain:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1      # read-only check
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1   # uninstall (-Restore to undo)
+```
+
+### Option B: Manual setup
+
+Devin reads several kinds of always-on rule files — **prefer `.devin/rules/` for new setups**:
+
+| File path | Scope | Generation |
+|---|---|---|
+| `%USERPROFILE%\.devin\rules\chinese-thinking.md` (Windows)<br>`~/.devin/rules/chinese-thinking.md` (macOS/Linux) | Global | New, supports `trigger: always_on` |
+| `%APPDATA%\devin\AGENTS.md` (Windows)<br>`~/.config/devin/AGENTS.md` (macOS/Linux) | Global | New |
+| `%USERPROFILE%\.codeium\windsurf\memories\global_rules.md` | Global | Legacy, still read |
+
+> Windows example: `C:\Users\<you>\.devin\rules\chinese-thinking.md`
+
+If the file doesn't exist, **create it**; if it exists, **append** the rule — do not overwrite existing rules.
+
+### Add the language rule
+
+Copy the **full content** of [`templates/chinese-thinking-v2.md`](templates/chinese-thinking-v2.md) (including frontmatter) as a rule file under `.devin/rules/`; or append just the **body** to `AGENTS.md` / `global_rules.md`.
+
+v2 improvements over v1:
+
+- Covers visible analysis, plans, tool-call notes, subagent output, errors, and summaries;
+- Addresses drift from English logs, English code, long contexts, and mode switches;
+- Explicitly preserves code, paths, APIs, SQL, JSON, and log originals;
+- Clearly separates visible Thoughts from invisible internal reasoning;
+- More concise, reducing context overhead.
+
+The original compact template remains at [`templates/language-rules.md`](templates/language-rules.md).
 
 ### Step 3: Restart and verify
 
@@ -83,11 +99,19 @@ Full template: [`templates/language-rules.md`](templates/language-rules.md).
 devin-chinese-thinking/
 ├── README.md                  ← This guide (Chinese)
 ├── README.en.md               ← This file (English)
+├── CHANGELOG.md               ← Changelog
 ├── docs/
-│   └── mechanism.md           ← Deep dive: why this works
+│   ├── mechanism.md           ← Deep dive: why this works
+│   ├── compatibility.md       ← Rule-loading audit + tested-environment log
+│   ├── manual-test-matrix.md  ← Manual test matrix (real Devin runs)
+│   └── ollama-fallback.md     ← Optional local translation fallback (design)
 ├── templates/
-│   ├── language-rules.md      ← Full language-rules template (copy-ready)
+│   ├── chinese-thinking-v2.md ← v2 rule template (.devin/rules, always_on)
+│   ├── language-rules.md      ← v1 compact template (still usable)
 │   └── project-agents.md      ← Project-level AGENTS.md template
+├── scripts/                   ← Windows one-click scripts (install/doctor/uninstall)
+├── tests/                     ← check_drift.py + offline unit tests
+├── assets/                    ← banner, screenshot, QR codes
 └── LICENSE                    ← MIT
 ```
 
@@ -103,21 +127,40 @@ Language rules are just one of many always-on rules. You can combine them with c
 
 ### Subagents are covered too
 
-The rule explicitly covers "subagents, plan mode, and pre-tool-call reasoning", so even when the agent spawns a subagent for search or exploration, the subagent's thinking chain stays in Chinese.
+The v2 rule requires subagent visible output to follow the same language rule and suggests restating "visible output in Simplified Chinese" in subagent task descriptions.
+
+### If drift happens: measure visible text offline
+
+Save text copied from the Devin UI as `.txt` and measure the Chinese/English split with `tests/check_drift.py`:
+
+```bash
+python tests/check_drift.py visible.txt          # JSON report
+python tests/check_drift.py visible.txt --format csv
+python tests/check_drift.py --compare base.json new.json
+```
+
+It excludes code blocks, logs, URLs, paths, and technical identifiers. **Note**: it only analyzes text you provide — it does not read hidden reasoning and cannot alone prove the rules work. See [docs/manual-test-matrix.md](docs/manual-test-matrix.md).
+
+### Optional: local Ollama translation fallback (design only)
+
+If rules don't fully take effect, a local Ollama instance could translate copied English visible text into Chinese. Currently design-only — see [docs/ollama-fallback.md](docs/ollama-fallback.md). It does not touch the Devin install directory or network layer, and can be disabled independently.
 
 ## ❓ FAQ
 
 **Q: Do I need to configure both files?**
-A: No, one is enough. Configuring both adds redundancy in case one rule chain fails to load.
+A: No, one is enough. On Windows, `scripts\install.ps1 -Targets all` sets up both new and legacy paths at once.
 
-**Q: Is the thinking chain "real internal reasoning" or a display-layer translation?**
-A: The model generates reasoning directly in Chinese — it is not translated afterwards, so reasoning quality is unaffected.
+**Q: Can it guarantee 100% Chinese thinking notes?**
+A: No. Rules raise the tendency toward Chinese, but model versions, long contexts, and mode switches can still cause drift. Use `tests/check_drift.py` to quantify drift in visible text; real-world results should be verified manually (see the test matrix).
+
+**Q: Can rules control "real internal reasoning"?**
+A: No — and we don't claim so. Invisible internal reasoning is outside rule control. This project constrains the *visible* thinking notes, plans, tool notes, and replies shown in the UI. Visible text is generated in Chinese directly rather than translated afterwards (an experience-based observation, not benchmark-verified).
 
 **Q: Will it affect code comments and output language?**
-A: The rule also constrains reply language. Code identifiers (variable names, API names, etc.) stay in English; if you want code comments in English too, just remove the "code comment descriptions" clause from the rule.
+A: v2 defaults code comments to Simplified Chinese while keeping technical identifiers (variable names, API names, paths, SQL, JSON, log originals) verbatim. If you want English code comments, remove the corresponding clause.
 
 **Q: Will it stop working after a Devin update?**
-A: Rule files are user-level configuration and are not overwritten by product updates.
+A: Rule files are user-level config and generally survive product updates; but if Devin changes rule paths or loading, legacy paths may stop working — check the official docs and run `doctor.ps1`.
 
 **Q: Can it be localized to other languages?**
 A: Yes. Replace "Simplified Chinese" with your target language (e.g. English, 日本語) — the principle is the same.

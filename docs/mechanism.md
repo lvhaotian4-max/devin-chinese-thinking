@@ -2,27 +2,46 @@
 
 ## 一、Devin 的规则体系
 
-Devin Desktop / CLI 在每次会话启动时，会加载一组 **always-on（始终生效）规则**。这些规则以 Markdown 形式存在于用户目录下，内容会被注入到模型的系统提示中，优先级高于普通对话指令。
+Devin Desktop / CLI 在每次会话启动时，会加载一组 **always-on（始终生效）规则**。这些规则以 Markdown 形式存在于用户目录或项目目录下，内容会被注入到模型的系统提示中，作为高优先级指令。
 
-常见的规则文件位置：
+> **路径分两代，注意区分：**
+>
+> **新版 Devin（`.devin/` 体系，优先）**
+> ```
+> 项目级:
+>   <项目>/.devin/rules/*.md        # 每文件一条规则，支持 trigger frontmatter
+>   <项目>/.devin/global_rules.md   # 单文件 always-on
+>   <项目>/AGENTS.md                # 项目根目录，自动加载
+>
+> 用户级（全局）:
+>   Windows: %USERPROFILE%\.devin\rules\*.md
+>   Windows: %USERPROFILE%\.devin\global_rules.md
+>   macOS/Linux: ~/.devin/rules/*.md
+>   macOS/Linux: ~/.devin/global_rules.md
+>   全局: %APPDATA%\devin\AGENTS.md（Windows）/ ~/.config/devin/AGENTS.md
+> ```
+>
+> **旧版 Windsurf / Cascade 兼容路径（仍被读取，但优先级更低）**
+> ```
+>   %USERPROFILE%\.codeium\windsurf\memories\global_rules.md
+>   <项目>/.windsurf/rules/*.md、<项目>/.windsurf/global_rules.md
+>   <项目>/.windsurfrules
+> ```
+>
+> 同一目录下 `.devin/` 优先于 `.windsurf/`；两边规则文件会同时加载。
+> `.devin/rules/*.md` 支持 `trigger` frontmatter（`always_on`、`manual`、
+> `model_decision`、`agent`、`glob`），本项目 v2 模板使用 `always_on`。
 
-```
-Windows:
-  %USERPROFILE%\.codeium\windsurf\memories\global_rules.md
-  %APPDATA%\devin\AGENTS.md
-
-macOS / Linux:
-  ~/.codeium/windsurf/memories/global_rules.md
-  ~/.config/devin/AGENTS.md
-```
-
-项目级规则则放在仓库根目录的 `AGENTS.md`，只对该项目的会话生效。
+项目级规则放在仓库 `.devin/rules/` 或根目录 `AGENTS.md`，只对该项目的会话生效。
 
 ## 二、思考链（thinking chain）是什么
 
-现代推理模型（如 SWE-2 Flash）在生成最终回答之前，会先产生一段**内部推理文本**——也就是 thinking / reasoning trace。它通常不直接展示给用户，但在 Devin 的界面中可以看到，用于解释 Agent "为什么这么做"。
+现代推理模型（如 SWE-2 Flash）在生成最终回答之前，会产生推理文本——即 thinking / reasoning trace。需要区分两层：
 
-关键点：**思考链的语言由模型自行决定**，默认倾向英文（因为训练语料中英文推理占比高）。但模型并非只能用英文思考——只要系统提示中有明确指令，它就能用指定语言完成推理。
+- **不可见内部推理**：模型的隐藏思维链，用户和规则都无法直接观测或强制控制；
+- **可见思考说明（Thoughts）**：Devin 界面中展示给用户的分析、计划、工具调用说明等文本，由模型显式生成，可被语言规则约束。
+
+关键点：**可见文本的语言由模型自行决定**，默认倾向英文（因为训练语料中英文推理占比高）。但模型并非只能用英文——只要系统提示中有明确指令，它就能用指定语言生成可见文本。
 
 ## 三、注入语言指令的生效机制
 
@@ -50,18 +69,24 @@ macOS / Linux:
 | 方案 | 覆盖范围 | 稳定性 |
 |---|---|---|
 | 每次对话手动说"请用中文思考" | 单次会话 | ❌ 易遗忘，subagent 不继承 |
-| 项目级 `AGENTS.md` | 单个仓库 | ⚠️ 换项目要重配 |
-　**全局规则文件**　| **所有会话 + 子代理**　|　**✅ 一劳永逸**　|
+| 项目级 `AGENTS.md` / `.devin/rules/` | 单个仓库 | ⚠️ 换项目要重配 |
+| **用户级全局规则** | **所有会话 + 子代理** | **✅ 推荐，一劳永逸** |
 
-全局规则在每次会话启动时注入，且会随上下文传递给子代理，因此是唯一能覆盖"所有推理场景"的方案。
+全局规则在每次会话启动时注入，且会随上下文传递给子代理，因此覆盖面最广。
+
+> 注意：规则提高的是**倾向性**而非硬性保证。模型版本、上下文长度、
+> 会话中途的模式切换都可能造成语言漂移；遇到漂移可用
+> `tests/check_drift.py` 对可见文本做离线统计，评估实际漂移程度。
 
 ## 五、对推理质量的影响
 
-把思考链切换为中文**不会降低推理质量**：
+把可见输出切换为中文**预期不会降低推理质量**，但需要说明：
 
-- 模型的推理能力与思考语言无关，SWE-2 Flash 对中文的理解和生成能力很强；
-- 思考链是"思考过程"而非"交付物"，语言切换不改变其逻辑结构；
-- 反而有实测反馈：中文思考链更便于中文用户审查 Agent 的决策过程。
+- 目前的结论来自使用体验观察，**没有经过严格的对照基准测试**，
+  不应视为已证实的结论；
+- 模型的推理能力与输出语言无关，SWE-2 Flash 对中文的理解和生成能力较强；
+- 可见思考说明是"展示层"文本，语言切换不改变模型内部推理结构；
+- 中文可见输出更便于中文用户审查 Agent 的决策过程（这是体验层面的便利）。
 
 唯一需要注意的是：规则里要求"代码、命令、文件路径、API 名称等技术标识符保持原文"，避免模型把代码里的英文标识符也"翻译"成中文导致不可运行。
 
