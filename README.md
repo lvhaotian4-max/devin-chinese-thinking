@@ -2,9 +2,9 @@
 
 ![banner](assets/banner.jpg)
 
-# 🧠 Devin 思考链汉化指南
+# 🧠 Devin 思考链汉化
 
-**让 Devin / SWE-2 / SWE-2 Flash 的可见思考说明（Thoughts / reasoning trace）更稳定地使用简体中文输出**
+**让 Devin全部模型 的可见思考说明（Thoughts / reasoning trace）更稳定地使用简体中文输出**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)]()
