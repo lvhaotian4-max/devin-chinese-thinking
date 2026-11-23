@@ -5,7 +5,8 @@
 | 脚本 | 作用 | 是否修改文件 |
 |---|---|---|
 | `install.ps1` | 安装规则（+可选 hook） | 是（写用户目录，先备份） |
-| `status.ps1` | 检查安装状态 | 否（只读） |
+| `status.ps1` | 检查安装状态 + Devin 版本跟踪（`-Track`） | 否（只读；-Track 写一个小状态文件） |
+| `detect_language.ps1` | 检测可见文本汉化程度（中英文占比） | 否 |
 | `doctor.ps1` | status.ps1 的兼容别名 | 否 |
 | `uninstall.ps1` | 卸载规则与 hook | 是（只删本项目内容） |
 | `test.ps1` | 沙箱自动化测试 | 只写 %TEMP% 沙箱 |

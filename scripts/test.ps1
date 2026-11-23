@@ -328,6 +328,23 @@ try {
     Record 'T15' 'status.ps1 只读检查' 'PASS' ''
 } catch { Record 'T15' 'status.ps1 只读检查' 'FAIL' $_.Exception.Message }
 
+# ---------- T16 detect_language + status -Track ----------
+try {
+    $detectPs1 = Join-Path $scriptDir 'detect_language.ps1'
+    $enSample = Join-Path $sandbox 'en.txt'
+    $zhSample = Join-Path $sandbox 'zh.txt'
+    [System.IO.File]::WriteAllText($enSample, "I will inspect the repository structure first and then read the main entry file carefully.`n`nThen I need to check the test configuration before making changes.`n", (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText($zhSample, "我先查看目录结构。`n`n然后读取主入口文件。`n`n最后运行测试验证。`n", (New-Object System.Text.UTF8Encoding($false)))
+    $rEn = Invoke-Ps $detectPs1 @('-TextFile', $enSample)
+    $rZh = Invoke-Ps $detectPs1 @('-TextFile', $zhSample)
+    Assert-True ($rEn.Code -eq 0 -and $rEn.Output -match '漂移|drift_ratio') "en detect failed: $($rEn.Output)"
+    Assert-True ($rZh.Code -eq 0 -and $rZh.Output -match '中文为主') "zh detect failed: $($rZh.Output)"
+    # status -Track 在沙箱写 state.json（Devin 不存在 → not-detected，不写状态，验证不崩即可）
+    $rSt = Invoke-Ps $statusPs1 @('-Track')
+    Assert-True ($rSt.Code -eq 0) "status -Track exit=$($rSt.Code)"
+    Record 'T16' 'detect_language + status -Track' 'PASS' ''
+} catch { Record 'T16' 'detect_language + status -Track' 'FAIL' $_.Exception.Message }
+
 # ---------- 汇总 ----------
 Write-Host ''
 Write-Host '===== 测试结果汇总 =====' -ForegroundColor White

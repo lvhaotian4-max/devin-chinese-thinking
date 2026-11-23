@@ -32,6 +32,24 @@
 | hooks（`-IncludeHooks`） | `%APPDATA%\devin\config.json` | ✅ 官方文档确认事件与 additionalContext；本机正在生效的 hook 即此机制 | 本会话开头注入指令 + lifecycle-hooks.mdx |
 | 其他 Windsurf 系 Agent | `.windsurf/rules/`、codeium memories | ⚠️ 理论兼容，未实测 | — |
 
+## 模型覆盖矩阵
+
+语言规则/hook 是**模型无关**的上下文指令——任何接受系统提示的模型都能
+"看到"它，但遵循程度取决于模型本身。下表逐模型记录验证状态：
+
+| 模型 | 机制是否覆盖 | 验证状态 | 备注 |
+|---|---|---|---|
+| SWE-2 | ✅ 规则+hook 均注入 | ✅ 本会话实测中文输出 | Devin Desktop 1.141.2 |
+| SWE-2 Flash | ✅ 同上 | ⚠️ 作者早期截图（v1 配置） | 建议用 detect_language.ps1 复测 |
+| SWE-2 1.6 Slow（及其他 SWE-2 变体） | ✅ 同上 | ❌ 未验证 | 机制相同，预期有效但无实测 |
+| Kimi（Devin 内可用模型） | ✅ 同上 | ❌ 未验证 | 依赖模型对中文指令的遵循度 |
+| Claude（Devin 内可用模型） | ✅ 同上 | ❌ 未验证 | 同上 |
+| Gemini（Devin 内可用模型） | ✅ 同上 | ❌ 未验证 | 同上 |
+| GLM（Devin 内可用模型） | ✅ 同上 | ❌ 未验证 | 同上 |
+
+> 想知道某个模型下是否生效：在该模型会话中给任务 → 复制可见输出 →
+> `scripts\detect_language.ps1 -TextFile out.txt` 看 drift_ratio。
+
 ## 已知限制（诚实声明）
 
 - 规则只能提高中文输出的**倾向性**，不能保证 100% 不漂移；

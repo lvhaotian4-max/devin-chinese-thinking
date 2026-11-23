@@ -28,15 +28,21 @@
 
 ## 🎯 目前实际支持什么
 
-| 产品 / 机制 | 状态 | 证据 |
+| 产品 / 模型 | 状态 | 证据 |
 |---|---|---|
 | Devin Desktop 1.141.2 + SWE-2 | ✅ 本会话实测中文输出 | 本仓库 V2 升级会话本身 |
+| SWE-2 Flash / SWE-2 1.6 Slow / Kimi / Claude / Gemini / GLM | ⚠️ 机制覆盖（模型无关注入），均未实测 | 见[模型覆盖矩阵](docs/compatibility.md#模型覆盖矩阵) |
 | 规则文件（AGENTS.md / codeium memories） | ✅ 实测被加载 | 会话系统提示中的 rules 块 |
 | 生命周期 hook（每次提问重注入） | ✅ 官方文档 + 本机生效中 | `lifecycle-hooks.mdx` + 本会话注入记录 |
 | `~/.devin/rules/*.md` | ⚠️ 文档确认，Desktop 实测待补 | 官方 `rules.mdx` |
 | Devin CLI | ⚠️ 机制相同，未实测 | 本机无 CLI |
 | macOS / Linux | ⚠️ 路径有文档依据，脚本仅 Windows | — |
 | Ollama 翻译原型 | ✅ `--mock` 已测；真实翻译未验证 | 需本机 Ollama |
+
+**版本更新与汉化检测**：`status.ps1 -Track` 会记录 Devin 版本号，
+下次运行自动提示"版本已变化"；`detect_language.ps1 -TextFile out.txt`
+分析你从界面复制出的可见文本，报告中文/英文占比与漂移判定
+（只统计可见文本，不涉及隐藏推理）。
 
 详细验证状态见 [`docs/真实效果验证.md`](docs/真实效果验证.md) 和
 [`docs/V2升级验收报告.md`](docs/V2升级验收报告.md)。

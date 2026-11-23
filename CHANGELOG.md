@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.1.0] — 2026-11-23 检测能力增强
+
+### 新增
+
+- `scripts/detect_language.ps1`：可见文本汉化检测——优先调用
+  `check_drift.py`（Python），无 Python 时内置近似统计；输出
+  drift_ratio 与判定（<0.1 中文为主 / ≤0.3 偶发漂移 / >0.3 漂移明显）。
+  明确声明：只分析用户提供的可见文本，不涉及隐藏推理。
+- `status.ps1 -Track`：记录 Devin Desktop 版本号到
+  `%APPDATA%\devin-chinese-thinking\state.json`，下次运行自动对比
+  并在版本变化时提示复查规则；默认仍只读。
+- 模型覆盖矩阵（`docs/compatibility.md`）：SWE-2 已实测；
+  SWE-2 Flash / SWE-2 1.6 Slow / Kimi / Claude / Gemini / GLM
+  机制覆盖但均未实测，附逐模型验证方法。
+- `test.ps1` 新增 T16（detect_language + status -Track），共 16 项。
+
+### 说明
+
+- 规则与 hook 为模型无关的上下文指令，所有模型"机制上都覆盖"，
+  但各模型对中文指令的遵循度不同，文档已如实区分。
+- 脚本侧无法读取隐藏思维链；"思维链是否汉化"只能通过
+  detect_language.ps1 分析用户复制出的可见文本来近似判断。
+
 ## [2.0.0] — 2026-11-23 V2 全面升级
 
 ### 新增

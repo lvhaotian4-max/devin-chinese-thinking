@@ -12,11 +12,19 @@
   - 新旧规则并存等冲突提示
   - 输出人工验证加载的步骤指引
 
+.PARAMETER Track
+  记录当前 Devin 版本到状态文件（%APPDATA%\devin-chinese-thinking\state.json），
+  下次运行时对比：版本变了 = Devin 已更新，提示复查规则是否仍生效。
+  不加此开关则完全只读。
+
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File status.ps1
+  powershell -ExecutionPolicy Bypass -File status.ps1 -Track
 #>
 [CmdletBinding()]
-param()
+param(
+    [switch]$Track
+)
 
 $ErrorActionPreference = 'Continue'
 $MARKER = '<!-- devin-chinese-thinking:v2 -->'
@@ -74,6 +82,27 @@ if ($devinExe) {
     $ver = ''
     try { $ver = (Get-Item -LiteralPath $devinExe).VersionInfo.ProductVersion } catch {}
     Add-Check 'Devin Desktop' $devinExe "detected$(if($ver){" v$ver"})"
+
+    # ---- 版本更新检测（-Track 时读写状态文件） ----
+    $stateDir = Join-Path $env:APPDATA 'devin-chinese-thinking'
+    $statePath = Join-Path $stateDir 'state.json'
+    if (Test-Path -LiteralPath $statePath) {
+        try {
+            $state = Get-Content -LiteralPath $statePath -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($state.devinVersion -and $ver -and $state.devinVersion -ne $ver) {
+                Write-Host "[!] Devin 版本已变化: $($state.devinVersion) -> $ver" -ForegroundColor Yellow
+                Write-Host "    建议：重启 Devin 后观察中文输出是否仍生效；规则路径若变更，status 会显示 MISSING。" -ForegroundColor Yellow
+            } elseif ($state.devinVersion -eq $ver) {
+                Write-Host "[i] Devin 版本未变化: v$ver" -ForegroundColor DarkGray
+            }
+        } catch {}
+    }
+    if ($Track) {
+        if (-not (Test-Path -LiteralPath $stateDir)) { New-Item -ItemType Directory -Path $stateDir -Force | Out-Null }
+        $stateObj = [ordered]@{ devinVersion = $ver; exePath = $devinExe; lastChecked = (Get-Date -Format 'o') }
+        ($stateObj | ConvertTo-Json) | Set-Content -LiteralPath $statePath -Encoding UTF8
+        Write-Host "[i] 已记录 Devin 版本 v$ver -> $statePath" -ForegroundColor DarkGray
+    }
 } else {
     Add-Check 'Devin Desktop' '(not found)' 'not-detected — 规则仍可写入，但无法确认客户端'
 }
