@@ -1,184 +1,165 @@
 <div align="center">
 
-![banner](assets/banner.jpg)
+# 🧠 Devin Chinese-Thinking Rules
 
-# 🧠 Devin Thinking Chain Localization Guide
-
-**Make Devin / SWE-2 / SWE-2 Flash visible thinking notes (Thoughts / reasoning trace) output primarily in Simplified Chinese**
+**Make the visible text Devin / SWE-2 / SWE-2 Flash shows in its UI — thinking notes, plans, pre-tool-call notes, replies, and summaries — output primarily in Simplified Chinese**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)]()
-[![Devin](https://img.shields.io/badge/Devin-CLI%20%2F%20Desktop-0b5fff)](https://devin.ai)
+[![Verified](https://img.shields.io/badge/verified-Devin%20Desktop%201.141.2-brightgreen)]()
 
-[Quick Start](#-quick-start) · [How It Works](docs/mechanism.md) · [Templates](#-ready-to-copy-templates) · [FAQ](#-faq) · [中文](README.md)
+[Quick Start](#-quick-start) · [Live Demo](demo/index.html) · [How It Works](docs/中文思考规则实现原理.md) · [Install Guide](docs/Windows安装与卸载.md) · [Verification](docs/真实效果验证.md) · [中文](README.md)
 
 </div>
 
 ---
 
-## ✨ Preview
+## ⚠️ What it does — and does not do
 
-Once configured, the **thinking notes, plans, pre-tool-call explanations, and summaries shown to you** will be primarily in Simplified Chinese instead of the default English.
+| ✅ It can | ❌ It cannot |
+|---|---|
+| Make the agent **lean toward** Simplified Chinese for visible text via rule files + optional hooks | Guarantee 100% drift-free output (long contexts, mode switches can still produce English) |
+| Constrain **visible** thinking notes, plans, tool notes, replies | Control the model's **invisible internal reasoning** (unobservable, unprovable) |
+| One-click install with backup, idempotency, safe uninstall — never touches the Devin binary | Modify the Devin install directory, hijack network traffic, or inject the client |
+| Optionally translate text you paste out via local Ollama | Auto-scrape the UI for real-time translation (no official API; not implemented) |
 
-> 💡 Thinking notes are the visible part of the model's "inner monologue". Switching them to Chinese makes it much easier to review the AI's reasoning and debug agent behavior.
-> Note: rules raise the *tendency* toward Chinese, not a hard guarantee — model versions, long contexts, and mode switches can still cause drift. Invisible internal reasoning is outside the rules' control. See [Compatibility](docs/compatibility.md).
+> **"Rules requesting Chinese output" ≠ "proof that hidden internal reasoning is Chinese".**
+> This project only constrains text the model explicitly generates and shows you.
 
-![Preview](assets/screenshot.jpg)
+## 🎯 What is actually supported today
 
-## 🎯 Compatibility
-
-| Product / Model | Status | Notes |
+| Product / Mechanism | Status | Evidence |
 |---|---|---|
-| Devin Desktop (IDE built-in Agent) | ✅ Author-tested | See `assets/screenshot.jpg`; single-session evidence |
-| Devin CLI | ⚠️ Mechanism confirmed | Official docs confirm rule loading; language effect pending retest |
-| SWE-2 Flash | ✅ Author-tested | Same as above |
-| `.devin/rules` v2 template | ⚠️ Pending manual test | Docs confirm `always_on` support; see [test matrix](docs/manual-test-matrix.md) |
-| Other Windsurf-rules-based Agents | ⚠️ Theoretically compatible | Not tested |
+| Devin Desktop 1.141.2 + SWE-2 | ✅ Verified this session | This repo's own V2 upgrade session |
+| Rule files (AGENTS.md / codeium memories) | ✅ Confirmed loaded | rules blocks in session system prompt |
+| Lifecycle hooks (re-inject every prompt) | ✅ Official docs + live on this machine | `lifecycle-hooks.mdx` + injection observed |
+| `~/.devin/rules/*.md` | ⚠️ Documented; Desktop load untested | official `rules.mdx` |
+| Devin CLI | ⚠️ Same mechanism, untested | no CLI on this machine |
+| macOS / Linux | ⚠️ Documented paths; scripts are Windows-only | — |
+| Ollama translate prototype | ✅ `--mock` tested; real translation unverified | needs local Ollama |
 
-## 🚀 Quick Start
+See [`docs/真实效果验证.md`](docs/真实效果验证.md) (verification log) and
+[`docs/V2升级验收报告.md`](docs/V2升级验收报告.md) (acceptance report).
 
-The whole setup takes **about 2 minutes**. Windows users can use the one-click script; manual setup also works.
-
-### Option A: One-click script (Windows, recommended)
+## 🚀 Quick Start (Windows)
 
 ```powershell
 git clone https://github.com/lvhaotian4-max/devin-chinese-thinking
 cd devin-chinese-thinking
+
+# Install rules (new + legacy paths; auto-backup, idempotent, never overwrites your rules)
 powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Targets all
+
+# Recommended: also install the hook — re-injects the language rule every prompt (needs node)
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Targets all -IncludeHooks
+
+# Check status (read-only)
+powershell -ExecutionPolicy Bypass -File scripts\status.ps1
+
+# Restart Devin Desktop or open a new session, then give the agent any task
 ```
 
-- Detects both new paths (`~/.devin/rules/`, `%APPDATA%\devin\AGENTS.md`)
-  and legacy paths (`.codeium/windsurf/memories/global_rules.md`);
-- Backs up existing files to `.bak-<timestamp>` before modifying;
-  idempotent on re-run; never overwrites unmanaged files.
-
-Verify and maintain:
+Uninstall:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1      # read-only check
-powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1   # uninstall (-Restore to undo)
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1          # preview + confirm
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1 -Force    # uninstall directly
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1 -Restore  # roll back from .bak
 ```
 
-### Option B: Manual setup
+Manual setup, project-scope install, and macOS/Linux paths:
+[`docs/Windows安装与卸载.md`](docs/Windows安装与卸载.md) and
+[`docs/完整运行流程.md`](docs/完整运行流程.md).
 
-Devin reads several kinds of always-on rule files — **prefer `.devin/rules/` for new setups**:
+## 🖥️ Live Demo
 
-| File path | Scope | Generation |
-|---|---|---|
-| `%USERPROFILE%\.devin\rules\chinese-thinking.md` (Windows)<br>`~/.devin/rules/chinese-thinking.md` (macOS/Linux) | Global | New, supports `trigger: always_on` |
-| `%APPDATA%\devin\AGENTS.md` (Windows)<br>`~/.config/devin/AGENTS.md` (macOS/Linux) | Global | New |
-| `%USERPROFILE%\.codeium\windsurf\memories\global_rules.md` | Global | Legacy, still read |
+[`demo/index.html`](demo/index.html) — a fully offline HTML demo; double-click to open,
+no network needed. Simulated config detection, install walkthrough,
+English-vs-Chinese comparison, how it works, troubleshooting, and uninstall flow.
+**All detection data on the page is simulated** and clearly labeled.
 
-> Windows example: `C:\Users\<you>\.devin\rules\chinese-thinking.md`
+![demo screenshot](assets/screenshots/demo-overview.png)
 
-If the file doesn't exist, **create it**; if it exists, **append** the rule — do not overwrite existing rules.
+Real effect screenshot (author's earlier test, v1 config, single session):
 
-### Add the language rule
+![preview](assets/screenshot.jpg)
 
-Copy the **full content** of [`templates/chinese-thinking-v2.md`](templates/chinese-thinking-v2.md) (including frontmatter) as a rule file under `.devin/rules/`; or append just the **body** to `AGENTS.md` / `global_rules.md`.
+## 🧩 How it works (short version)
 
-v2 improvements over v1:
+```
+rule templates → install.ps1 writes + backs up → Devin injects at session start
+               → hook re-injects on every prompt → model leans toward Chinese
+               → UI shows Chinese visible text
+```
 
-- Covers visible analysis, plans, tool-call notes, subagent output, errors, and summaries;
-- Addresses drift from English logs, English code, long contexts, and mode switches;
-- Explicitly preserves code, paths, APIs, SQL, JSON, and log originals;
-- Clearly separates visible Thoughts from invisible internal reasoning;
-- More concise, reducing context overhead.
+Three stackable mechanisms: `~/.devin/rules/*.md` (`always_on`),
+a marked block in `%APPDATA%\devin\AGENTS.md`, and legacy codeium memories —
+plus an optional hook (`config.json` → `SessionStart`/`UserPromptSubmit`
+→ `additionalContext`, the strongest anti-drift layer).
 
-The original compact template remains at [`templates/language-rules.md`](templates/language-rules.md).
+Full chain and boundaries:
+[`docs/中文思考规则实现原理.md`](docs/中文思考规则实现原理.md)
 
-### Step 3: Restart and verify
+## 🧪 Verification & tests
 
-1. Restart Devin (or open a new session) so the rules reload;
-2. Give the agent any task, e.g. `list the files in this folder`;
-3. Watch the thinking chain output — it should be entirely in Chinese.
+```powershell
+# Sandboxed automated tests (15 cases, never touches real config)
+powershell -ExecutionPolicy Bypass -File scripts\test.ps1
 
-## 📁 Repository Structure
+# Visible-text drift stats (save text copied from the Devin UI as .txt)
+python tests\check_drift.py visible.txt
+python tests\check_drift.py --compare base.json new.json
+
+# Optional: local Ollama translation (only text you provide)
+python scripts\translate_ollama.py visible.txt --mock   # offline demo
+python scripts\translate_ollama.py visible.txt          # needs local Ollama
+```
+
+V2 acceptance: sandbox tests **15/15 pass**, Python unit tests **19/19 pass**,
+Chinese output verified live in this session. Full records:
+[`docs/V2升级验收报告.md`](docs/V2升级验收报告.md).
+
+## 📁 Repository layout
 
 ```
 devin-chinese-thinking/
-├── README.md                  ← This guide (Chinese)
-├── README.en.md               ← This file (English)
-├── CHANGELOG.md               ← Changelog
-├── docs/
-│   ├── mechanism.md           ← Deep dive: why this works
-│   ├── compatibility.md       ← Rule-loading audit + tested-environment log
-│   ├── manual-test-matrix.md  ← Manual test matrix (real Devin runs)
-│   └── ollama-fallback.md     ← Optional local translation fallback (design)
-├── templates/
-│   ├── chinese-thinking-v2.md ← v2 rule template (.devin/rules, always_on)
-│   ├── language-rules.md      ← v1 compact template (still usable)
-│   └── project-agents.md      ← Project-level AGENTS.md template
-├── scripts/                   ← Windows one-click scripts (install/doctor/uninstall)
-├── tests/                     ← check_drift.py + offline unit tests
-├── assets/                    ← banner, screenshot, QR codes
-└── LICENSE                    ← MIT
+├── README.md / README.en.md
+├── CHANGELOG.md
+├── demo/index.html               ← offline demo (simulated data labeled)
+├── docs/                         ← audit, principles, install, verification, FAQ, limits
+├── templates/                    ← v2 always_on rule + legacy templates
+├── scripts/                      ← install / status / uninstall / test / translate
+├── assets/hooks/                 ← hook script template
+├── assets/screenshots/           ← real renders of the demo
+└── tests/                        ← check_drift.py + unit tests
 ```
-
-## 💡 Advanced Usage
-
-### Apply to a single project only
-
-If you don't want global localization, put the rules in the **project root `AGENTS.md`** so they only apply to that repo's sessions. See [`templates/project-agents.md`](templates/project-agents.md).
-
-### Coexist with other rules
-
-Language rules are just one of many always-on rules. You can combine them with code style, build commands, and security policies in the same file — Devin follows them all together. Placing language rules near the **top** of the file gives them higher weight.
-
-### Subagents are covered too
-
-The v2 rule requires subagent visible output to follow the same language rule and suggests restating "visible output in Simplified Chinese" in subagent task descriptions.
-
-### If drift happens: measure visible text offline
-
-Save text copied from the Devin UI as `.txt` and measure the Chinese/English split with `tests/check_drift.py`:
-
-```bash
-python tests/check_drift.py visible.txt          # JSON report
-python tests/check_drift.py visible.txt --format csv
-python tests/check_drift.py --compare base.json new.json
-```
-
-It excludes code blocks, logs, URLs, paths, and technical identifiers. **Note**: it only analyzes text you provide — it does not read hidden reasoning and cannot alone prove the rules work. See [docs/manual-test-matrix.md](docs/manual-test-matrix.md).
-
-### Optional: local Ollama translation fallback (design only)
-
-If rules don't fully take effect, a local Ollama instance could translate copied English visible text into Chinese. Currently design-only — see [docs/ollama-fallback.md](docs/ollama-fallback.md). It does not touch the Devin install directory or network layer, and can be disabled independently.
 
 ## ❓ FAQ
 
-**Q: Do I need to configure both files?**
-A: No, one is enough. On Windows, `scripts\install.ps1 -Targets all` sets up both new and legacy paths at once.
-
-**Q: Can it guarantee 100% Chinese thinking notes?**
-A: No. Rules raise the tendency toward Chinese, but model versions, long contexts, and mode switches can still cause drift. Use `tests/check_drift.py` to quantify drift in visible text; real-world results should be verified manually (see the test matrix).
+**Q: Does it guarantee 100% Chinese thinking notes?**
+A: No. Rules raise the tendency; long contexts, mode switches, and model
+versions can still drift. `-IncludeHooks` is the strongest anti-drift option.
 
 **Q: Can rules control "real internal reasoning"?**
-A: No — and we don't claim so. Invisible internal reasoning is outside rule control. This project constrains the *visible* thinking notes, plans, tool notes, and replies shown in the UI. Visible text is generated in Chinese directly rather than translated afterwards (an experience-based observation, not benchmark-verified).
+A: No — and we don't claim it. Only the *visible* UI text is constrained.
 
-**Q: Will it affect code comments and output language?**
-A: v2 defaults code comments to Simplified Chinese while keeping technical identifiers (variable names, API names, paths, SQL, JSON, log originals) verbatim. If you want English code comments, remove the corresponding clause.
+**Q: Will it overwrite my other rules?**
+A: No. Writes either create new files or append marked blocks; unmanaged
+files are reported as conflicts, never overwritten; uninstall removes only
+project-managed content.
 
-**Q: Will it stop working after a Devin update?**
-A: Rule files are user-level config and generally survive product updates; but if Devin changes rule paths or loading, legacy paths may stop working — check the official docs and run `doctor.ps1`.
+**Q: Will it break after a Devin update?**
+A: Rule files are user-level config and generally survive updates; if paths
+change, `status.ps1` shows MISSING — defer to official docs.
 
-**Q: Can it be localized to other languages?**
-A: Yes. Replace "Simplified Chinese" with your target language (e.g. English, 日本語) — the principle is the same.
+**Q: macOS / Linux?**
+A: Manually place `templates/chinese-thinking-v2.md` in `~/.devin/rules/`
+or append its body to `~/.config/devin/AGENTS.md`. PowerShell scripts are
+Windows-only.
 
-## 🙏 Acknowledgements
-
-This approach comes from configuration practices verified in real-world use. Thanks to the Devin / Windsurf rules system for supporting user-defined instructions.
-
-## ☕ Support
-
-If this project helped you, consider buying me a coffee ☕
-
-| WeChat Pay | Alipay |
-|---|---|
-| ![WeChat QR](assets/wechat-qr.jpg) | ![Alipay QR](assets/alipay-qr.jpg) |
-
-> Donations are entirely voluntary — a Star ⭐ is the greatest support!
+**Q: Is Ollama required?**
+A: No. It's optional, for translating English visible text you paste out.
 
 ## 📄 License
 
-[MIT](LICENSE) — use it freely, and welcome a Star ⭐
+[MIT](LICENSE)

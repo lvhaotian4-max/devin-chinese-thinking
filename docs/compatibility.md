@@ -16,18 +16,20 @@
 | 项目 | `.devin/global_rules.md` | 单文件 always-on |
 | 项目 | `.windsurf/rules/*.md`、`.windsurf/global_rules.md` | 旧版兼容，`.devin/` 优先 |
 | 用户（全局） | `%APPDATA%\devin\AGENTS.md`（Win）/ `~/.config/devin/AGENTS.md` | 每次会话加载 |
-| 用户（全局） | `~/.devin/rules/*.md`、`~/.devin/global_rules.md` | 每次会话加载 |
+| 用户（全局） | `~/.devin/rules/*.md`、`~/.devin/global_rules.md` | 每次会话加载（文档确认；Desktop 实测待补） |
 | 用户（全局） | `~/.claude/CLAUDE.md` | 兼容读取 |
 | 旧版 | `~/.codeium/windsurf/memories/global_rules.md` | Windsurf 记忆规则，仍被读取 |
+| Hooks | `%APPDATA%\devin\config.json` → `hooks/*.mjs` | SessionStart / UserPromptSubmit 注入 additionalContext |
 
 ## 适用版本记录表
 
 | 产品 / 版本 | 规则路径 | 状态 | 证据 |
 |---|---|---|---|
-| Devin Desktop（作者环境，2025–2026） | `%APPDATA%\devin\AGENTS.md` + `~/.codeium/windsurf/memories/global_rules.md` | ✅ 作者实测有截图 | `assets/screenshot.jpg` |
+| Devin Desktop 1.141.2（作者环境，2026-11 实测） | `%APPDATA%\devin\AGENTS.md` + codeium `global_rules.md` + `config.json` hooks | ✅ 本会话可见输出全程简体中文（真实端到端证据） | 本会话 + `assets/screenshot.jpg` |
 | Devin CLI | 同上全局路径 | ⚠️ 文档确认加载机制，语言效果待人工复测 | 官方 rules.mdx |
-| SWE-2 / SWE-2 Flash | 不依赖版本，取决于规则注入 | ⚠️ 作者实测；其他模型未验证 | 截图 + 规则文件 |
-| `.devin/rules/*.md`（v2 新模板） | 项目级 / `~/.devin/rules/` | ⚠️ 官方文档确认支持 `always_on`；v2 模板的实际语言效果**待人工测试** | rules.mdx + `docs/manual-test-matrix.md` |
+| SWE-2 / SWE-2 Flash | 不依赖版本，取决于规则注入 | ✅ SWE-2 本会话实测中文输出；其他模型未验证 | 本会话 |
+| `~/.devin/rules/*.md`（v2 新模板） | 用户级 / 项目级 | ⚠️ 官方文档确认支持 `always_on`；**Desktop 实际加载未在本机验证**（该路径本机未安装） | rules.mdx |
+| hooks（`-IncludeHooks`） | `%APPDATA%\devin\config.json` | ✅ 官方文档确认事件与 additionalContext；本机正在生效的 hook 即此机制 | 本会话开头注入指令 + lifecycle-hooks.mdx |
 | 其他 Windsurf 系 Agent | `.windsurf/rules/`、codeium memories | ⚠️ 理论兼容，未实测 | — |
 
 ## 已知限制（诚实声明）

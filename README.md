@@ -1,187 +1,171 @@
 <div align="center">
 
-![banner](assets/banner.jpg)
+# 🧠 Devin 中文思考规则
 
-# 🧠 Devin 思考链汉化
-
-**让 Devin全部模型 的可见思考说明（Thoughts / reasoning trace）更稳定地使用简体中文输出**
+**让 Devin / SWE-2 / SWE-2 Flash 在界面中展示的可见文本——思考说明、计划、工具调用说明、回复和总结——尽量使用简体中文**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)]()
-[![Devin](https://img.shields.io/badge/Devin-CLI%20%2F%20Desktop-0b5fff)](https://devin.ai)
+[![Verified](https://img.shields.io/badge/verified-Devin%20Desktop%201.141.2-brightgreen)]()
 
-[快速开始](#-快速开始) · [原理解析](docs/mechanism.md) · [模板下载](#-可直接复制的模板) · [常见问题](#-常见问题-faq) · [English](README.en.md)
+[快速开始](#-快速开始) · [在线演示](demo/index.html) · [原理](docs/中文思考规则实现原理.md) · [安装详解](docs/Windows安装与卸载.md) · [验证记录](docs/真实效果验证.md) · [English](README.en.md)
 
 </div>
 
 ---
 
-## ✨ 效果预览
+## ⚠️ 先说清楚：它是什么、不是什么
 
-配置完成后，Devin 在执行任务时**展示给用户的思考说明、计划、工具调用前的说明和总结**将以简体中文为主，而不是默认的英文。
+| ✅ 它能做的 | ❌ 它不能做的 |
+|---|---|
+| 通过规则文件 + 可选 hook 让 Agent **倾向于**用中文生成可见文本 | 保证 100% 不漂移（长上下文、模式切换仍可能英文） |
+| 约束界面中**可见**的思考说明、计划、工具说明、回复 | 控制模型**不可见的内部推理**（无法观测、无法证明） |
+| 一键安装/备份/幂等/安全卸载，不碰 Devin 程序本体 | 修改 Devin 安装目录、劫持网络、注入客户端 |
+| 可选本地 Ollama 翻译你复制出的文本 | 自动抓取界面做实时翻译（无官方接口，未实现） |
 
-> 💡 思考说明是模型的"内心独白"的可见部分。把它变成中文后，审查 AI 的推理逻辑、调试 Agent 行为都会方便得多。
-> 注意：规则提高的是**倾向性**而非硬性保证，模型、版本或长上下文仍可能出现漂移；不可见的内部推理不在可控范围。详见 [兼容性说明](docs/compatibility.md)。
+> **"规则请求中文输出" ≠ "已证明隐藏内部推理是中文"。**
+> 本项目只约束模型显式生成、展示给用户的文本。
+
+## 🎯 目前实际支持什么
+
+| 产品 / 机制 | 状态 | 证据 |
+|---|---|---|
+| Devin Desktop 1.141.2 + SWE-2 | ✅ 本会话实测中文输出 | 本仓库 V2 升级会话本身 |
+| 规则文件（AGENTS.md / codeium memories） | ✅ 实测被加载 | 会话系统提示中的 rules 块 |
+| 生命周期 hook（每次提问重注入） | ✅ 官方文档 + 本机生效中 | `lifecycle-hooks.mdx` + 本会话注入记录 |
+| `~/.devin/rules/*.md` | ⚠️ 文档确认，Desktop 实测待补 | 官方 `rules.mdx` |
+| Devin CLI | ⚠️ 机制相同，未实测 | 本机无 CLI |
+| macOS / Linux | ⚠️ 路径有文档依据，脚本仅 Windows | — |
+| Ollama 翻译原型 | ✅ `--mock` 已测；真实翻译未验证 | 需本机 Ollama |
+
+详细验证状态见 [`docs/真实效果验证.md`](docs/真实效果验证.md) 和
+[`docs/V2升级验收报告.md`](docs/V2升级验收报告.md)。
+
+## 🚀 快速开始（Windows）
+
+```powershell
+git clone https://github.com/lvhaotian4-max/devin-chinese-thinking
+cd devin-chinese-thinking
+
+# 安装规则（新旧路径都写，自动备份、幂等、不覆盖你的其他规则）
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Targets all
+
+# 推荐：加装 hook —— 每次提问重新注入语言指令，抗漂移最强（需 node）
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Targets all -IncludeHooks
+
+# 检查状态（只读）
+powershell -ExecutionPolicy Bypass -File scripts\status.ps1
+
+# 重启 Devin Desktop 或新开会话，然后给 Agent 一个任务观察输出
+```
+
+卸载：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1          # 预览+确认
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1 -Force    # 直接卸载
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1 -Restore  # 从 .bak 备份回滚
+```
+
+手工配置、项目级安装、macOS/Linux 路径见
+[`docs/Windows安装与卸载.md`](docs/Windows安装与卸载.md) 和
+[`docs/完整运行流程.md`](docs/完整运行流程.md)。
+
+## 🖥️ 在线演示
+
+[`demo/index.html`](demo/index.html) —— 纯离线 HTML 演示，双击即可打开，
+无需联网。包含：配置检测模拟、安装流程模拟、中英效果对比、工作原理、
+故障诊断、卸载流程。**页面内所有检测数据均为模拟数据**，有显著标注。
+
+![demo 截图](assets/screenshots/demo-overview.png)
+
+真实效果截图（作者早期实测，v1 配置，单次会话）：
 
 ![效果预览](assets/screenshot.jpg)
 
-## 🎯 适用范围
+## 🧩 工作原理（简版）
 
-| 产品 / 模型 | 状态 | 说明 |
-|---|---|---|
-| Devin Desktop（IDE 内置 Agent） | ✅ 作者实测 | 见 `assets/screenshot.jpg`，单次会话证据 |
-| Devin CLI | ⚠️ 机制已确认 | 官方文档确认规则加载，语言效果待复测 |
-| SWE-2 Flash | ✅ 作者实测 | 同上 |
-| `.devin/rules` v2 模板 | ⚠️ 待人工测试 | 官方文档支持 `always_on`，效果见 [测试矩阵](docs/manual-test-matrix.md) |
-| 其他基于 Windsurf 规则体系的 Agent | ⚠️ 理论兼容 | 未实测 |
-
-## 🚀 快速开始
-
-整个配置只需要 **2 分钟**。Windows 用户推荐使用一键脚本；也可以手工配置。
-
-### 方式 A：一键脚本（Windows，推荐）
-
-```powershell
-# 克隆本仓库后，在仓库根目录执行：
-git clone https://github.com/lvhaotian4-max/devin-chinese-thinking
-cd devin-chinese-thinking
-powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Targets all
+```
+规则模板 → install.ps1 写入+备份 → Devin 会话启动注入 / hook 每次提问注入
+        → 模型倾向用中文生成可见文本 → 界面输出中文
 ```
 
-- 自动识别新版（`~/.devin/rules/`、`%APPDATA%\devin\AGENTS.md`）与旧版
-  （`.codeium/windsurf/memories/global_rules.md`）路径；
-- 修改已有文件前自动备份为 `.bak-<时间戳>`；重复运行幂等；
-- 已有非本项目管理的同名文件时**不覆盖**，只报告冲突。
+三层机制可叠加：`~/.devin/rules/*.md`（always_on）、
+`%APPDATA%\devin\AGENTS.md` 标记块、codeium memories（旧版兼容），
+外加可选 hook（`config.json` → `SessionStart`/`UserPromptSubmit`
+→ `additionalContext`，每轮重注入，抗漂移最强）。
 
-验证与维护：
+完整链路与边界说明：[docs/中文思考规则实现原理.md](docs/中文思考规则实现原理.md)
+
+## 🧪 验证与测试
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1      # 体检（只读）
-powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1   # 卸载（可 -Restore 恢复备份）
+# 沙箱自动化测试（15 项，不动真实配置）
+powershell -ExecutionPolicy Bypass -File scripts\test.ps1
+
+# 可见文本漂移统计（把 Devin 界面复制出的文本存为 .txt）
+python tests\check_drift.py visible.txt
+python tests\check_drift.py --compare base.json new.json
+
+# 可选：本地 Ollama 翻译对照（仅处理你提供的文本）
+python scripts\translate_ollama.py visible.txt --mock   # 离线演示
+python scripts\translate_ollama.py visible.txt          # 需本机 Ollama
 ```
 
-### 方式 B：手工配置
+本仓库 V2 验收：沙箱测试 **15/15 通过**，Python 单测 **19/19 通过**，
+Devin Desktop 中文输出经本会话实测。逐项记录见
+[`docs/V2升级验收报告.md`](docs/V2升级验收报告.md)。
 
-Devin 会读取多类 always-on 规则文件，**新版优先用 `.devin/rules/`**：
-
-| 文件路径 | 作用域 | 新旧 |
-|---|---|---|
-| `%USERPROFILE%\.devin\rules\chinese-thinking.md`（Windows）<br>`~/.devin/rules/chinese-thinking.md`（macOS/Linux） | 全局 | 新版，支持 `trigger: always_on` |
-| `%APPDATA%\devin\AGENTS.md`（Windows）<br>`~/.config/devin/AGENTS.md`（macOS/Linux） | 全局 | 新版 |
-| `%USERPROFILE%\.codeium\windsurf\memories\global_rules.md` | 全局 | 旧版兼容，仍被读取 |
-
-> Windows 上的实际路径示例：`C:\Users\<你的用户名>\.devin\rules\chinese-thinking.md`
-
-如果文件不存在，**直接创建**即可；如果已存在，**追加**规则内容，不要覆盖原有规则。
-
-### 写入语言规则
-
-把 [`templates/chinese-thinking-v2.md`](templates/chinese-thinking-v2.md) 的**完整内容**（含 frontmatter）复制为上述 `.devin/rules/` 下的规则文件；或把**正文部分**追加到 `AGENTS.md` / `global_rules.md`。
-
-v2 模板相对 v1 的改进：
-
-- 覆盖可见分析、计划、工具调用说明、子代理输出、错误与总结；
-- 针对英文日志、英文代码、长上下文、模式切换的漂移给出约定；
-- 明确保留代码、路径、API、SQL、JSON、日志原文；
-- 明确区分可见 Thoughts 与不可见内部推理，不虚构控制能力；
-- 规则更精简，减少对上下文的占用。
-
-旧版简洁模板仍保留在 [`templates/language-rules.md`](templates/language-rules.md)，可按需使用。
-
-### 第 3 步：重启会话并验证
-
-1. 重启 Devin（或新开一个会话），让规则重新加载；
-2. 随便给 Agent 一个任务，例如：`帮我看看这个文件夹里有什么`；
-3. 观察 Agent 的思考链输出 —— 应该全程是中文。
-
-## 📁 本仓库结构
+## 📁 仓库结构
 
 ```
 devin-chinese-thinking/
-├── README.md                  ← 本文件：快速上手指南
-├── README.en.md               ← English guide
-├── CHANGELOG.md               ← 版本变更记录
+├── README.md / README.en.md
+├── CHANGELOG.md
+├── demo/index.html               ← 离线演示（模拟数据已标注）
 ├── docs/
-│   ├── mechanism.md           ← 深度解析：为什么这样能生效
-│   ├── compatibility.md       ← 规则加载机制核对 + 实测环境记录
-│   ├── manual-test-matrix.md  ← 人工测试矩阵（真实 Devin 验证用）
-│   └── ollama-fallback.md     ← 可选本地翻译兜底（设计稿）
-├── templates/
-│   ├── chinese-thinking-v2.md ← v2 规则模板（.devin/rules always_on，推荐）
-│   ├── language-rules.md      ← v1 语言规则模板（简洁版，仍可用）
-│   └── project-agents.md      ← 项目级 AGENTS.md 模板
-├── scripts/                   ← Windows 一键脚本（install/doctor/uninstall）
-├── tests/                     ← check_drift.py 漂移统计 + 离线单元测试
-├── assets/                    ← banner、截图、打赏码
-└── LICENSE                    ← MIT 协议
+│   ├── 项目现状审计.md            ← 升级前审计（含 hooks 机制发现）
+│   ├── 中文思考规则实现原理.md     ← 端到端链路 + 边界澄清
+│   ├── 完整运行流程.md            ← 安装→验证→卸载全步骤
+│   ├── Windows安装与卸载.md       ← 脚本参数与路径详解
+│   ├── 真实效果验证.md            ← 已验证/未验证清单
+│   ├── 常见问题与解决方案.md
+│   ├── 兼容性与技术限制.md
+│   ├── V2升级验收报告.md          ← 测试执行记录
+│   ├── mechanism.md / compatibility.md / manual-test-matrix.md
+│   └── ollama-fallback.md        ← Ollama 翻译说明
+├── templates/                    ← v2 always_on 规则等模板
+├── scripts/                      ← install/status(uninstall)/test/translate
+├── assets/hooks/                 ← hook 脚本模板
+├── assets/screenshots/           ← demo 真实渲染截图
+└── tests/                        ← check_drift.py + 单测
 ```
 
-## 💡 进阶用法
-
-### 只对某一个项目生效
-
-如果你不想全局汉化，可以把规则写进**项目根目录的 `AGENTS.md`**，只对该仓库的会话生效。模板见 [`templates/project-agents.md`](templates/project-agents.md)。
-
-### 与其他规则共存
-
-语言规则只是众多 always-on 规则中的一条。你可以把它和代码风格、构建命令、安全规范等规则写在同一个文件里，Devin 会综合遵循。建议把语言规则放在文件**靠前的位置**，权重更高。
-
-### 子代理也会被覆盖
-
-v2 规则明确要求子代理可见输出遵循同一语言规则，并建议在派生 subagent 的任务描述中重申"可见输出使用简体中文"。
-
-### 漂移了怎么办：离线统计可见文本
-
-把 Devin 界面中复制出的可见文本保存为 `.txt`，用 `tests/check_drift.py` 统计中英文分布：
-
-```bash
-python tests/check_drift.py visible.txt          # JSON 报告
-python tests/check_drift.py visible.txt --format csv
-# 基线对比：先后两次生成 JSON 报告，再对比
-python tests/check_drift.py --compare base.json new.json
-```
-
-它会剔除代码块、日志、URL、路径和技术标识符，只统计自然语言段落。
-**注意**：它只分析你提供的文本，不读取隐藏推理，也不能单独证明规则生效——真实效果仍需人工观察，测试方法见 [docs/manual-test-matrix.md](docs/manual-test-matrix.md)。
-
-### 可选：本地 Ollama 翻译兜底（设计稿）
-
-若规则生效不完整，可考虑用本机 Ollama 把复制出的英文可见文本翻成中文对照。当前仅为设计方案，见 [docs/ollama-fallback.md](docs/ollama-fallback.md)——不触碰 Devin 安装目录，不劫持网络，可独立关闭。
-
-## ❓ 常见问题 FAQ
-
-**Q：必须两个文件都配置吗？**
-A：不需要，任选其一即可。Windows 上推荐直接用 `scripts/install.ps1 -Targets all` 一次配齐新旧路径。
+## ❓ FAQ
 
 **Q：能保证思考说明 100% 中文吗？**
-A：不能。规则提高中文输出的倾向性，但模型版本、上下文长度、模式切换都可能造成漂移。可用 `tests/check_drift.py` 量化可见文本的漂移程度，真实效果以人工测试为准（见测试矩阵）。
+A：不能。规则提高倾向性，长上下文/模式切换/模型版本仍可能漂移。
+抗漂移最强手段是 `-IncludeHooks`（每次提问重注入）。
 
 **Q：规则能控制"真正的内部推理"吗？**
-A：不能，也不应声称能。模型不可见的内部推理不在规则可控范围；本项目约束的是界面中**可见**的思考说明、计划、工具说明和回复。可见文本由模型显式生成，用中文生成而非事后翻译，推理逻辑不受影响（此为经验观察，未经严格基准验证）。
+A：不能，本项目不做此声称。约束的是界面**可见**文本。
 
-**Q：会影响代码注释和输出语言吗？**
-A：v2 规则默认代码注释用简体中文，技术标识符（变量名、API 名、路径、SQL、JSON、日志原文）保持原文。如果你希望代码注释也用英文，删掉规则里对应一条即可。
+**Q：我的其他规则会被覆盖吗？**
+A：不会。所有写入要么新建文件、要么追加带标记的块；已有非本项目
+文件只报告冲突不覆盖；卸载只删本项目标记内容。
 
 **Q：Devin 更新后会失效吗？**
-A：规则文件是用户级配置，一般不会被产品更新覆盖；但官方若调整规则路径或加载机制，旧路径可能失效，需以官方文档为准并运行 `doctor.ps1` 检查。
+A：规则是用户级配置一般不被覆盖；若官方改路径，`status.ps1` 会显示
+MISSING，以官方文档为准。
 
-**Q：可以汉化成其他语言吗？**
-A：可以。把"简体中文"替换成目标语言（如 English、日本語）即可，原理相同。
+**Q：macOS/Linux 呢？**
+A：手工把 `templates/chinese-thinking-v2.md` 放到
+`~/.devin/rules/` 或追加到 `~/.config/devin/AGENTS.md`；
+PowerShell 脚本仅 Windows。
 
-## 🙏 致谢
-
-本方案源自实际使用中验证可行的配置实践，感谢 Devin / Windsurf 规则体系对用户自定义指令的支持。
-
-## ☕ 打赏支持
-
-如果这个项目对你有帮助，欢迎请我喝杯咖啡 ☕
-
-| 微信支付 | 支付宝 |
-|---|---|
-| ![微信收款码](assets/wechat-qr.jpg) | ![支付宝收款码](assets/alipay-qr.jpg) |
-
-> 打赏完全自愿，Star ⭐ 就是最大的支持！
+**Q：Ollama 是必须的吗？**
+A：不是。纯可选，用于把你复制出的英文可见文本翻成中文对照。
 
 ## 📄 License
 
-[MIT](LICENSE) — 随便用，欢迎 Star ⭐
+[MIT](LICENSE)

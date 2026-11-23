@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devin 中文思考规则 · 离线演示</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --border:#30363d; --fg:#e6edf3;
+    --dim:#8b949e; --accent:#58a6ff; --green:#3fb950; --yellow:#d29922;
+    --red:#f85149; --purple:#bc8cff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.6}
+  header{padding:24px 32px;border-bottom:1px solid var(--border);
+         background:linear-gradient(135deg,#161b22,#1f2937)}
+  h1{margin:0 0 6px;font-size:24px}
+  .sub{color:var(--dim);font-size:14px}
+  .badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;
+         border:1px solid var(--yellow);color:var(--yellow);margin-right:8px}
+  nav{display:flex;gap:4px;padding:12px 32px;border-bottom:1px solid var(--border);
+      background:var(--panel);flex-wrap:wrap}
+  nav button{background:none;border:1px solid transparent;color:var(--dim);
+             padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px}
+  nav button.active{color:var(--fg);border-color:var(--border);background:#21262d}
+  main{padding:24px 32px;max-width:1100px;margin:0 auto}
+  section{display:none}
+  section.active{display:block}
+  .card{background:var(--panel);border:1px solid var(--border);
+        border-radius:12px;padding:20px;margin-bottom:20px}
+  .card h2{margin-top:0;font-size:18px;color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;
+        vertical-align:top}
+  th{color:var(--dim);font-weight:600}
+  code,.mono{font-family:"Cascadia Code",Consolas,monospace;font-size:12.5px;
+             background:#1c2128;padding:1px 6px;border-radius:4px}
+  pre{background:#0d1117;border:1px solid var(--border);border-radius:8px;
+      padding:14px;overflow-x:auto;font-size:13px;line-height:1.55}
+  .tag{font-size:11px;padding:1px 8px;border-radius:10px;margin-left:6px}
+  .tag.sim{background:#3d2e00;color:var(--yellow);border:1px solid var(--yellow)}
+  .tag.real{background:#0d2d1a;color:var(--green);border:1px solid var(--green)}
+  .tag.unverified{background:#2d1f3d;color:var(--purple);border:1px solid var(--purple)}
+  .ok{color:var(--green)} .warn{color:var(--yellow)} .err{color:var(--red)}
+  .dim{color:var(--dim)}
+  button.act{background:var(--accent);color:#0d1117;border:none;padding:10px 22px;
+             border-radius:8px;font-weight:600;cursor:pointer;font-size:14px}
+  button.act:disabled{opacity:.5;cursor:default}
+  button.ghost{background:none;border:1px solid var(--border);color:var(--fg);
+               padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px}
+  #log{font-family:"Cascadia Code",Consolas,monospace;font-size:13px;white-space:pre-wrap}
+  #log .ln{padding:2px 0}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:800px){.compare{grid-template-columns:1fr}}
+  .bubble{border-radius:12px;padding:16px;border:1px solid var(--border)}
+  .bubble.en{background:#1c2128}
+  .bubble.zh{background:#12261a;border-color:#1f5138}
+  .bubble .who{font-size:12px;color:var(--dim);margin-bottom:8px}
+  details{border:1px solid var(--border);border-radius:8px;margin-bottom:10px;
+          background:var(--panel)}
+  summary{padding:12px 16px;cursor:pointer;font-weight:600}
+  details .body{padding:0 16px 14px;color:var(--dim);font-size:14px}
+  .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .flow .node{background:#21262d;border:1px solid var(--border);border-radius:8px;
+              padding:10px 14px;font-size:13px;text-align:center}
+  .flow .arrow{color:var(--dim);font-size:18px}
+  .note{border-left:3px solid var(--yellow);padding:10px 14px;background:#2d2200;
+        border-radius:0 8px 8px 0;font-size:13px;margin:12px 0}
+  .note.blue{border-color:var(--accent);background:#0d1f33}
+  .note.green{border-color:var(--green);background:#0d2417}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧠 Devin 中文思考规则 · 离线演示</h1>
+  <div class="sub">
+    <span class="badge">⚠️ 本页面所有检测数据均为模拟数据</span>
+    不连接网络、不读取你的真实配置、不代表真实安装结果。
+    真实验证请运行 <code>scripts\install.ps1</code> 与 <code>scripts\status.ps1</code>。
+  </div>
+</header>
+
+<nav>
+  <button data-tab="overview" class="active">总览</button>
+  <button data-tab="install">安装演示</button>
+  <button data-tab="compare">效果对比</button>
+  <button data-tab="principle">工作原理</button>
+  <button data-tab="diagnose">故障诊断</button>
+  <button data-tab="uninstall">卸载流程</button>
+</nav>
+
+<main>
+
+<!-- ============ 总览 ============ -->
+<section id="overview" class="active">
+  <div class="card">
+    <h2>这个项目做什么 <span class="tag sim">说明</span></h2>
+    <p>通过向 Devin 的<strong>用户级规则文件</strong>写入语言规则（可选再加
+    <strong>生命周期 hook</strong>），让 Agent 在界面中展示的
+    <strong>可见文本</strong>——思考说明、计划、工具调用前的说明、回复和总结——
+    尽量使用简体中文。</p>
+    <p class="dim">它不修改 Devin 程序本体、不劫持网络、不注入客户端。
+    卸载即完全移除。</p>
+  </div>
+
+  <div class="card">
+    <h2>三种生效机制 <span class="tag sim">模拟状态表</span></h2>
+    <table>
+      <tr><th>机制</th><th>写入位置</th><th>注入时机</th><th>抗漂移能力</th><th>模拟状态</th></tr>
+      <tr><td>规则文件 v2</td><td><code>~/.devin/rules/chinese-thinking.md</code></td>
+          <td>会话启动</td><td>中</td><td class="warn">待验证(Desktop)</td></tr>
+      <tr><td>全局 AGENTS.md 标记块</td><td><code>%APPDATA%\devin\AGENTS.md</code></td>
+          <td>会话启动</td><td>中</td><td class="ok">已验证*</td></tr>
+      <tr><td>旧版记忆规则</td><td><code>~/.codeium/windsurf/memories/global_rules.md</code></td>
+          <td>会话启动</td><td>中</td><td class="ok">已验证*</td></tr>
+      <tr><td>生命周期 hook（可选）</td><td><code>%APPDATA%\devin\config.json</code> + <code>hooks/*.mjs</code></td>
+          <td><strong>每次提问</strong></td><td><strong>强</strong></td><td class="ok">已验证*</td></tr>
+    </table>
+    <p class="dim">* "已验证"指本项目作者的 Windows Devin Desktop 1.141.2 环境；
+    你的环境可能不同，请以 <code>status.ps1</code> 输出为准。</p>
+  </div>
+
+  <div class="card">
+    <h2>诚实边界</h2>
+    <div class="note">规则约束的是模型<strong>显式生成的可见文本</strong>。
+    模型不可见的内部推理不在规则可控范围，本项目不对其做任何承诺，
+    也无法证明"隐藏推理确实是中文"。</div>
+    <div class="note blue">规则提高中文输出的<strong>倾向性</strong>，不是 100% 保证。
+    长上下文、模式切换、模型版本变化都可能造成漂移。</div>
+  </div>
+</section>
+
+<!-- ============ 安装演示 ============ -->
+<section id="install">
+  <div class="card">
+    <h2>安装流程模拟 <span class="tag sim">模拟数据</span></h2>
+    <p>点击按钮模拟 <code>install.ps1 -Targets all -IncludeHooks</code> 的执行过程。
+    真实脚本请在本地 PowerShell 中运行。</p>
+    <p>
+      <button class="act" id="btnInstall">▶ 模拟安装</button>
+      <button class="ghost" id="btnResetLog">清空日志</button>
+      <label style="margin-left:16px;font-size:13px;color:var(--dim)">
+        <input type="checkbox" id="chkHooks" checked> 同时安装 hook（-IncludeHooks）
+      </label>
+    </p>
+    <pre id="log">（点击"模拟安装"开始）</pre>
+  </div>
+
+  <div class="card">
+    <h2>安装后检测到的规则文件 <span class="tag sim">模拟数据</span></h2>
+    <table id="fileTable">
+      <tr><th>路径</th><th>状态</th><th>编码</th><th>标记</th></tr>
+    </table>
+    <p class="dim">真实路径以 <code>status.ps1</code> 在你机器上的输出为准；
+    脚本只写用户目录，不触碰 Devin 安装目录。</p>
+  </div>
+</section>
+
+<!-- ============ 效果对比 ============ -->
+<section id="compare">
+  <div class="card">
+    <h2>英文 vs 中文可见输出 <span class="tag sim">示例文本</span></h2>
+    <p class="dim">左侧是未配置规则时 Agent 典型的英文可见思考说明；
+    右侧是配置规则后的中文输出（示例，非真实截图）。</p>
+    <div class="compare">
+      <div class="bubble en">
+        <div class="who">Agent 可见思考说明（英文 · 未配置）</div>
+        I will first inspect the repository structure to understand the project layout.
+        Then I need to check the main entry file and the test configuration before making changes.
+      </div>
+      <div class="bubble zh">
+        <div class="who">Agent 可见思考说明（中文 · 已配置规则）</div>
+        我先查看仓库结构，了解项目布局。然后检查主入口文件和测试配置，
+        再决定如何修改。
+      </div>
+    </div>
+    <div class="note green" style="margin-top:16px">
+      代码、命令、文件路径、API 名、JSON/SQL、日志原文按规则保持原文，
+      不会被翻译。可用 <code>tests\check_drift.py</code> 对你复制出的真实可见文本
+      做离线漂移统计。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 工作原理 ============ -->
+<section id="principle">
+  <div class="card">
+    <h2>端到端链路 <span class="tag sim">示意图</span></h2>
+    <div class="flow">
+      <div class="node">用户规则模板<br><span class="dim">templates/*.md</span></div>
+      <div class="arrow">→</div>
+      <div class="node">文件安装+备份<br><span class="dim">install.ps1</span></div>
+      <div class="arrow">→</div>
+      <div class="node">Devin 规则加载<br><span class="dim">会话启动注入</span></div>
+      <div class="arrow">→</div>
+      <div class="node">Agent 可见文本<br><span class="dim">中文输出</span></div>
+    </div>
+    <p>可选 hook 链路：<code>config.json</code> 注册
+    <code>SessionStart / UserPromptSubmit</code> → hook 脚本输出
+    <code>additionalContext</code> → <strong>每次提问重新注入</strong>语言指令，
+    是抗长上下文漂移的最强手段。</p>
+  </div>
+
+  <div class="card">
+    <h2>可选：Ollama 本地翻译 <span class="tag unverified">原型 · 非实时集成</span></h2>
+    <p>当规则生效不完整时，可把<strong>你自己复制出来的</strong>英文可见文本
+    交给本机 Ollama 翻译成中文对照：</p>
+    <pre>python scripts\translate_ollama.py visible.txt --mock   # 离线演示
+python scripts\translate_ollama.py visible.txt          # 需本机 Ollama</pre>
+    <p class="dim">保护措施：仅允许 localhost endpoint；代码块/路径/JSON/SQL 原样保留；
+    缓存+去重+失败重试；不回写 Devin、不上传任何内容。
+    <strong>原生实时集成（自动抓取界面文本）未实现</strong>——Devin 没有公开
+    这样的接口，本项目不做流量解密、令牌窃取或客户端注入。</p>
+  </div>
+</section>
+
+<!-- ============ 故障诊断 ============ -->
+<section id="diagnose">
+  <div class="card">
+    <h2>常见问题自查 <span class="tag sim">通用指导</span></h2>
+
+    <details><summary>装了但 Agent 还是英文输出</summary>
+      <div class="body">① 完全重启 Devin Desktop 或新开会话（规则只在会话启动时注入）；
+      ② 运行 <code>status.ps1</code> 确认文件存在且含标记；
+      ③ 若是长会话中后段漂移，加装 hook：<code>install.ps1 -IncludeHooks</code>；
+      ④ 仍可能漂移——规则是倾向性约束，不是硬保证。</div>
+    </details>
+    <details><summary>status.ps1 显示 MISSING</summary>
+      <div class="body">说明对应路径下没有规则文件。运行
+      <code>install.ps1 -Targets all</code> 安装；若显示
+      <code>conflict-manual-merge</code>，表示同名文件已存在且非本项目管理，
+      需手动合并，脚本不会覆盖你的内容。</div>
+    </details>
+    <details><summary>中文变成乱码</summary>
+      <div class="body">本项目所有写入均为 UTF-8 无 BOM。若用记事本等旧工具
+      查看出现乱码，请改用 VS Code / 现代编辑器。也可运行
+      <code>status.ps1</code> 检查 <code>UTF8-BOM!</code> 标记。</div>
+    </details>
+    <details><summary>想只对某个项目生效</summary>
+      <div class="body"><code>install.ps1 -Scope project</code> 会把规则写到
+      当前目录的 <code>.devin\rules\</code>，只影响该项目会话。</div>
+    </details>
+    <details><summary>卸载后想恢复原样</summary>
+      <div class="body"><code>uninstall.ps1 -Restore</code> 会从最近的
+      <code>.bak-时间戳</code> 备份恢复被修改过的文件。</div>
+    </details>
+    <details><summary>hook 报错 / node 找不到</summary>
+      <div class="body">hook 依赖本机 node。未安装 node 时
+      <code>-IncludeHooks</code> 会自动跳过，规则文件不受影响。</div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ 卸载流程 ============ -->
+<section id="uninstall">
+  <div class="card">
+    <h2>卸载会发生什么 <span class="tag sim">说明</span></h2>
+    <table>
+      <tr><th>对象</th><th>卸载行为</th></tr>
+      <tr><td><code>~/.devin/rules/chinese-thinking.md</code></td>
+          <td>删除（仅当含本项目签名；同名用户文件不动）</td></tr>
+      <tr><td><code>AGENTS.md</code> / <code>global_rules.md</code> 中的标记块</td>
+          <td>只移除 <code>&lt;!-- devin-chinese-thinking:v2 --&gt;</code> 块，
+              你原有的其他规则原样保留</td></tr>
+      <tr><td><code>config.json</code> 中的 hook 条目</td>
+          <td>只移除引用 <code>devin-chinese-thinking.mjs</code> 的条目，
+              你自建的其他 hook 保留</td></tr>
+      <tr><td>安装前的备份 <code>*.bak-*</code></td>
+          <td>不删除；<code>-Restore</code> 可回滚</td></tr>
+    </table>
+    <pre># 预览将要处理的文件（只读）
+# Windows PowerShell:
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1
+# 跳过确认直接卸载：
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1 -Force
+# 从备份恢复：
+powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1 -Restore</pre>
+    <div class="note">卸载不触碰 Devin 安装目录、不动其他 Agent 工具的规则。
+    卸载后重启 Devin，新会话即恢复原状。</div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ---------- tab 切换 ----------
+const initialTab = new URLSearchParams(location.search).get('tab') || 'overview';
+document.querySelectorAll('nav button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.tab).classList.add('active');
+  });
+});
+// 支持 ?tab=xxx 直达（便于截图/分享）
+const initBtn = document.querySelector(`nav button[data-tab="${initialTab}"]`);
+if (initBtn) initBtn.click();
+
+// ---------- 安装模拟 ----------
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const logEl = document.getElementById('log');
+function logLine(text, cls) {
+  const d = document.createElement('div');
+  d.className = 'ln ' + (cls || '');
+  d.textContent = text;
+  logEl.appendChild(d);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+const fileTable = document.getElementById('fileTable');
+const FILES = [
+  ['%USERPROFILE%\\.devin\\rules\\chinese-thinking.md', 'created', 'UTF-8 无 BOM', 'v2 always_on'],
+  ['%APPDATA%\\devin\\AGENTS.md', 'appended', 'UTF-8 无 BOM', 'v2 块'],
+  ['%USERPROFILE%\\.codeium\\windsurf\\memories\\global_rules.md', 'appended', 'UTF-8 无 BOM', 'v2 块'],
+  ['%APPDATA%\\devin\\config.json + hooks\\devin-chinese-thinking.mjs', 'merged', 'JSON', 'hook×2 事件'],
+];
+function renderFiles(installed) {
+  fileTable.innerHTML = '<tr><th>路径</th><th>状态</th><th>编码</th><th>标记</th></tr>';
+  FILES.forEach(([p, st, enc, mk], i) => {
+    const show = installed || i < 3; // hook 行默认显示为"未安装"
+    const status = installed ? st : (i === 3 ? 'not-installed' : 'would-install');
+    const cls = installed ? 'ok' : 'dim';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="mono">${p}</td><td class="${cls}">${status}</td><td>${enc}</td><td>${mk}</td>`;
+    fileTable.appendChild(tr);
+  });
+}
+renderFiles(false);
+
+document.getElementById('btnInstall').addEventListener('click', async () => {
+  const btn = document.getElementById('btnInstall');
+  btn.disabled = true;
+  const withHooks = document.getElementById('chkHooks').checked;
+  logEl.innerHTML = '';
+  const steps = [
+    '[1/6] 探测 Devin Desktop 与候选规则目录 ...',
+    '      → 检测到 Devin.exe（模拟路径 D:\\Devin\\Devin.exe）',
+    '      → 候选规则路径 ×8（.devin/rules、AGENTS.md、codeium memories 等）',
+    '[2/6] 读取模板 templates/chinese-thinking-v2.md ...',
+    '      → frontmatter: trigger=always_on ✓',
+    '[3/6] 检查已有文件 ...',
+    '      → ~/.devin/rules/chinese-thinking.md: 不存在，将创建',
+    '      → %APPDATA%/devin/AGENTS.md: 存在，追加标记块（先备份 .bak-时间戳）',
+    '      → codeium global_rules.md: 存在，追加标记块（先备份）',
+  ];
+  if (withHooks) {
+    steps.push(
+      '[4/6] 安装 hook（-IncludeHooks） ...',
+      '      → 写入 hooks/devin-chinese-thinking.mjs（UTF-8 无 BOM）',
+      '      → 合并 config.json：SessionStart + UserPromptSubmit（备份原文件）',
+      '      → 检测到 node ✓');
+  } else {
+    steps.push('[4/6] 未启用 -IncludeHooks，跳过 hook 安装');
+  }
+  steps.push(
+    `[${withHooks ? '5' : '4'}/6] 幂等校验：重复运行不会产生重复标记块 ✓`,
+    `[${withHooks ? '6' : '5'}/6] 写入完成。重启 Devin 或新开会话后生效。`,
+    '      → 运行 scripts\\status.ps1 可验证；uninstall.ps1 可安全卸载。');
+  for (const s of steps) { logLine(s); await sleep(350); }
+  renderFiles(true);
+  btn.disabled = false;
+});
+document.getElementById('btnResetLog').addEventListener('click', () => {
+  logEl.innerHTML = '（点击"模拟安装"开始）';
+  renderFiles(false);
+});
+</script>
+</body>
+</html>

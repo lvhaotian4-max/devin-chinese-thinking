@@ -34,6 +34,27 @@ Devin Desktop / CLI 在每次会话启动时，会加载一组 **always-on（始
 
 项目级规则放在仓库 `.devin/rules/` 或根目录 `AGENTS.md`，只对该项目的会话生效。
 
+### 补充：生命周期 Hooks（V2 新增，抗漂移最强）
+
+Devin 还支持官方 hooks 机制（见 `extensibility/hooks/` 文档）：
+在 `%APPDATA%\devin\config.json` 的 `hooks` 中注册命令型 hook，
+可在 `SessionStart`、`UserPromptSubmit` 等生命周期事件触发。
+本项目的 `assets/hooks/devin-chinese-thinking.mjs` 在每次用户提交
+prompt 时向 stdout 输出 `hookSpecificOutput.additionalContext`，
+把语言指令**重新注入**当前上下文。
+
+与规则文件的关键区别：
+
+| | 规则文件 | Hook additionalContext |
+|---|---|---|
+| 注入时机 | 会话启动一次 | 每次用户提问都注入 |
+| 长上下文抗漂移 | 可能被稀释 | 每轮重新强化 |
+| 配置位置 | `~/.devin/rules/`、`AGENTS.md` 等 | `config.json` + `hooks/*.mjs` |
+| 启用方式 | install.ps1 默认 | `install.ps1 -IncludeHooks`（需 node） |
+
+注意：hook 注入的同样是**给模型看的上下文指令**，约束的是可见文本
+生成倾向，不接触不可见内部推理，也不构成 100% 保证。
+
 ## 二、思考链（thinking chain）是什么
 
 现代推理模型（如 SWE-2 Flash）在生成最终回答之前，会产生推理文本——即 thinking / reasoning trace。需要区分两层：
