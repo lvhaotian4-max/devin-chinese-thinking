@@ -33,6 +33,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# 统一控制台输出为 UTF-8，避免中文乱码
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+try { $OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+try { if (-not [Console]::IsOutputRedirected) { chcp 65001 | Out-Null } } catch {}
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 $driftPy = Join-Path $repoRoot 'tests\check_drift.py'

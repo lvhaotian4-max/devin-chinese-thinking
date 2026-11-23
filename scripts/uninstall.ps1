@@ -35,6 +35,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# 统一控制台输出为 UTF-8，避免中文乱码
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+try { $OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+try { if (-not [Console]::IsOutputRedirected) { chcp 65001 | Out-Null } } catch {}
 $MARKER_BEGIN = '<!-- devin-chinese-thinking:v2 -->'
 $MARKER_END   = '<!-- /devin-chinese-thinking:v2 -->'
 $RULE_FILE_NAME = 'chinese-thinking.md'
