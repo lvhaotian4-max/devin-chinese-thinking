@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0] — 2026-11-23 Devin Skill 防漂移
+
+### 新增
+
+- `skills/chinese-thinking/SKILL.md`：Devin 原生 skill，安装到
+  `%APPDATA%\devin\skills\` 后可用 `/chinese-thinking` 斜杠命令
+  （或 agent 按 description 自动触发）。功能：立即重申本会话
+  可见文本中文规则、约束子代理输出、可选对用户提供的可见文本
+  文件做漂移检测；明确不触碰 Devin 内部文件。
+- `install.ps1` 默认安装该 skill（用户级）；已有非本项目同名
+  skill 时不覆盖只报告冲突。
+- `uninstall.ps1` / `status.ps1` 同步支持 skill 文件检测与清理。
+- `test.ps1` 新增 T17（skill 往返+无关 skill 保留），共 17 项全过。
+
 ## [2.1.0] — 2026-11-23 检测能力增强
 
 ### 新增

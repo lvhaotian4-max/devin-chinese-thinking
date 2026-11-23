@@ -131,6 +131,10 @@ Inspect-File 'legacy windsurf rules dir' (Join-Path (Get-Location) '.windsurf\ru
 Inspect-File 'devin AGENT.md (alt)' (Join-Path $env:APPDATA 'devin\AGENT.md') $false
 Inspect-File 'claude CLAUDE.md' (Join-Path $env:USERPROFILE '.claude\CLAUDE.md') $false
 
+# skill 检查
+$skillPath = Join-Path $env:APPDATA 'devin\skills\chinese-thinking\SKILL.md'
+Inspect-File 'skill /chinese-thinking' $skillPath $false
+
 # ---- hooks 检查 ----
 Write-Host ''
 Write-Host '-- 生命周期 hooks --' -ForegroundColor White

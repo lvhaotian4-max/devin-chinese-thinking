@@ -101,6 +101,17 @@ if ($hookFileOurs) {
     $plan += [pscustomobject]@{Path=$hookPath; IsRuleFile=$false; HasBlock=$false; HasV1Hint=$false; Kind='hook-file'}
 }
 
+# skill：%APPDATA%\devin\skills\chinese-thinking\SKILL.md（含本项目标记才删）
+$skillPath = Join-Path $env:APPDATA 'devin\skills\chinese-thinking\SKILL.md'
+$skillOurs = $false
+if (Test-Path -LiteralPath $skillPath) {
+    $skillText = [System.IO.File]::ReadAllText($skillPath, (Get-Utf8NoBom))
+    if ($skillText -match 'devin-chinese-thinking:v2-skill') { $skillOurs = $true }
+}
+if ($skillOurs) {
+    $plan += [pscustomobject]@{Path=$skillPath; IsRuleFile=$false; HasBlock=$false; HasV1Hint=$false; Kind='skill-file'}
+}
+
 if ($plan.Count -eq 0) {
     Write-Ok '未发现本项目管理的规则/hook，无需卸载。'
     exit 0
@@ -117,14 +128,14 @@ if (-not $Force) {
 foreach ($item in $plan) {
     $p = $item.Path
 
-    if ($item.Kind -eq 'hook-file') {
+    if ($item.Kind -eq 'hook-file' -or $item.Kind -eq 'skill-file') {
         if ($Restore) {
-            Write-Info "-Restore 模式：保留 hook 文件（config.json 备份可能仍引用它）: $p"
+            Write-Info "-Restore 模式：保留文件（可能被配置引用）: $p"
             continue
         }
-        if ($PSCmdlet.ShouldProcess($p, 'delete project hook file')) {
+        if ($PSCmdlet.ShouldProcess($p, 'delete project file')) {
             Remove-Item -LiteralPath $p -Force
-            Write-Ok "已删除 hook 文件: $p"
+            Write-Ok "已删除文件: $p"
         }
         continue
     }

@@ -44,6 +44,11 @@
 分析你从界面复制出的可见文本，报告中文/英文占比与漂移判定
 （只统计可见文本，不涉及隐藏推理）。
 
+**会话内防漂移 Skill**：安装后 Devin 中可用 `/chinese-thinking` 斜杠命令
+（或由 agent 自动触发）——立即重申本会话中文输出规则、约束子代理、
+可附带可见文本文件做漂移检测。安装位置
+`%APPDATA%\devin\skills\chinese-thinking\SKILL.md`（全局，所有项目可用）。
+
 详细验证状态见 [`docs/真实效果验证.md`](docs/真实效果验证.md) 和
 [`docs/V2升级验收报告.md`](docs/V2升级验收报告.md)。
 

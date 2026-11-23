@@ -160,6 +160,38 @@ function Install-AppendBlock([string]$Path, [string]$Block, [string]$Label) {
     $script:results += [pscustomobject]@{Target=$Label; Path=$Path; Action='appended'}
 }
 
+# ---------- 可选：Devin skill（/chinese-thinking 斜杠命令） ----------
+$SKILL_NAME = 'chinese-thinking'
+function Install-Skill {
+    $src = Join-Path $repoRoot "skills\$SKILL_NAME\SKILL.md"
+    $dstDir = Join-Path $env:APPDATA "devin\skills\$SKILL_NAME"
+    $dst = Join-Path $dstDir 'SKILL.md'
+    if (-not (Test-Path -LiteralPath $src)) {
+        Write-Warn2 "找不到 skill 模板: $src，跳过。"
+        return
+    }
+    if (Test-Path -LiteralPath $dst) {
+        $existing = [System.IO.File]::ReadAllText($dst, (Get-Utf8NoBom))
+        if ($existing -match 'devin-chinese-thinking:v2-skill') {
+            Write-Ok "skill: 已安装（检测到标记），跳过。路径: $dst"
+            $script:results += [pscustomobject]@{Target='skill /chinese-thinking'; Path=$dst; Action='skipped-already-installed'}
+            return
+        }
+        Write-Warn2 "skill: $dst 已存在且非本项目管理，未覆盖。请手动处理。"
+        $script:results += [pscustomobject]@{Target='skill /chinese-thinking'; Path=$dst; Action='conflict-manual-merge'}
+        return
+    }
+    if ($WhatIfOnly) {
+        Write-Info "[WhatIf] 将安装 skill: $dst"
+        $script:results += [pscustomobject]@{Target='skill /chinese-thinking'; Path=$dst; Action='would-create'}
+        return
+    }
+    $content = [System.IO.File]::ReadAllText($src, (Get-Utf8NoBom))
+    Write-Utf8File -Path $dst -Content $content
+    Write-Ok "skill: 已安装 $dst （Devin 中可用 /$SKILL_NAME 调用）"
+    $script:results += [pscustomobject]@{Target='skill /chinese-thinking'; Path=$dst; Action='created'}
+}
+
 # ---------- 可选：生命周期 hook（抗漂移最强手段） ----------
 function Install-Hooks {
     $node = Get-Command node -ErrorAction SilentlyContinue
@@ -268,6 +300,7 @@ if ($Scope -eq 'project') {
         Install-AppendBlock -Path $windsurfPath -Block $appendBlock -Label 'legacy windsurf global_rules'
     }
     if ($IncludeHooks) { Install-Hooks }
+    Install-Skill
 }
 
 Write-Host ''

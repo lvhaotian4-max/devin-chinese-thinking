@@ -349,6 +349,34 @@ try {
     Record 'T16' 'detect_language + status -Track' 'PASS' ''
 } catch { Record 'T16' 'detect_language + status -Track' 'FAIL' $_.Exception.Message }
 
+# ---------- T17 skill 安装/卸载往返 ----------
+try {
+    $u8 = Join-Path $sandbox 'case17'; $a8 = Join-Path $sandbox 'case17-ada'
+    New-Item -ItemType Directory -Path $u8,$a8 -Force | Out-Null
+    # 预置一个无关 skill，验证不误删
+    $otherSkill = Join-Path $a8 'devin\skills\other-skill\SKILL.md'
+    New-Item -ItemType Directory -Path (Split-Path $otherSkill) -Force | Out-Null
+    [System.IO.File]::WriteAllText($otherSkill, "---`nname: other-skill`n---`nuser skill`n", (New-Object System.Text.UTF8Encoding($false)))
+    $env:USERPROFILE = $u8; $env:APPDATA = $a8
+    $r = Invoke-Ps $installPs1 @('-Targets','devin')
+    Assert-True ($r.Code -eq 0) "install exit=$($r.Code) : $($r.Output)"
+    $skillDst = Join-Path $a8 'devin\skills\chinese-thinking\SKILL.md'
+    Assert-True (Test-Path -LiteralPath $skillDst) 'skill file missing'
+    $st = [System.IO.File]::ReadAllText($skillDst)
+    Assert-True ($st -match 'devin-chinese-thinking:v2-skill') 'skill marker missing'
+    Assert-True ($st -match 'name:\s*chinese-thinking') 'skill frontmatter invalid'
+    # 重复安装幂等
+    $r2 = Invoke-Ps $installPs1 @('-Targets','devin')
+    Assert-True ($r2.Output -match 'skipped-already-installed|已安装') 'skill not idempotent'
+    # 卸载
+    $r3 = Invoke-Ps $uninstallPs1 @('-Force')
+    $env:USERPROFILE = $userHome; $env:APPDATA = $appData
+    Assert-True ($r3.Code -eq 0) "uninstall exit=$($r3.Code)"
+    Assert-True (-not (Test-Path -LiteralPath $skillDst)) 'skill file remains'
+    Assert-True (Test-Path -LiteralPath $otherSkill) 'unrelated skill removed!'
+    Record 'T17' 'skill 安装/卸载往返' 'PASS' ''
+} catch { $env:USERPROFILE=$userHome; $env:APPDATA=$appData; Record 'T17' 'skill 安装/卸载往返' 'FAIL' $_.Exception.Message }
+
 # ---------- 汇总 ----------
 Write-Host ''
 Write-Host '===== 测试结果汇总 =====' -ForegroundColor White
