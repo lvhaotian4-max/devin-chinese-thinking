@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧠 Devin 中文思考规则
+# 🧠 Devin 中文思考链
 
 **让 Devin / SWE-2 / SWE-2 Flash 在界面中展示的可见文本——思考说明、计划、工具调用说明、回复和总结——尽量使用简体中文**
 
